@@ -12,6 +12,9 @@
 
   <p>Selected Project Code: <span id="selectedCode">None</span></p>
 
+  <!-- 🔽 This is where the filtered records will be displayed -->
+  <div id="recordsContainer" style="margin-top: 20px;"></div>
+
   <script>
     async function fetchProjectCodes() {
       const dropdown = document.getElementById('projectDropdown');
@@ -34,12 +37,43 @@
       }
     }
 
+    async function fetchRecordsForProject(projectCode) {
+      const container = document.getElementById('recordsContainer');
+      container.innerHTML = 'Loading records...';
+
+      try {
+        const response = await fetch(`/api/get-records?projectCode=${encodeURIComponent(projectCode)}`);
+        const data = await response.json();
+
+        if (!data.records || data.records.length === 0) {
+          container.innerHTML = 'No records found for this project.';
+          return;
+        }
+
+        let html = '<ul>';
+        data.records.forEach(record => {
+          html += `<li>${JSON.stringify(record.fields)}</li>`;
+        });
+        html += '</ul>';
+
+        container.innerHTML = html;
+      } catch (error) {
+        console.error('Error fetching records:', error);
+        container.innerHTML = 'Failed to load records.';
+      }
+    }
+
     function handleSelection() {
       const selected = document.getElementById('projectDropdown').value;
       document.getElementById('selectedCode').textContent = selected || 'None';
+
+      if (selected) {
+        fetchRecordsForProject(selected);
+      } else {
+        document.getElementById('recordsContainer').innerHTML = '';
+      }
     }
 
-    // Call on page load
     fetchProjectCodes();
   </script>
 </body>
