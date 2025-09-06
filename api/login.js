@@ -39,7 +39,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         success: true,
         debug: {
-          matchedUser: records[0].fields.User,
+          matchedUser: records[0].fields.Usr,
           formula,
           recordsFound: records.length,
         }
