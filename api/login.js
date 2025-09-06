@@ -17,13 +17,13 @@ export default async function handler(req, res) {
   const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base('app6mKNJ76DPvbtch');
 
   try {
-    const formula = `AND(User='${username}', Password='${password}')`;
+    // Wrap field names in {} to handle uppercase letters
+    const formula = `AND({User}='${username}', {Password}='${password}')`;
 
     const records = await base('logindet').select({
       filterByFormula: formula
     }).firstPage();
 
-    // Debug: Log records length and formula used
     console.log(`Query formula: ${formula}`);
     console.log(`Records found: ${records.length}`);
 
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         success: true,
         debug: {
-          matchedUser: records[0].fields.user,
+          matchedUser: records[0].fields.User,
         }
       });
     } else {
