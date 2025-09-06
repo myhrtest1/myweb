@@ -1,29 +1,30 @@
 <script>
-  document.getElementById('login-form').addEventListener('submit', async function (event) {
-    event.preventDefault(); // ✅ Prevent default form submission
+  document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('login-form').addEventListener('submit', async function (event) {
+      event.preventDefault(); // Prevent default form submission
 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
 
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
 
-      const result = await response.json();
+        const result = await response.json();
 
-      if (response.ok && result.success) {
-        alert('Login successful!');
-        // ✅ Redirect to project.html
-        window.location.href = 'project.html';
-      } else {
-        alert('Login failed: ' + (result.message || result.error || 'Invalid credentials'));
+        if (response.ok && result.success) {
+          alert('Login successful!');
+          window.location.href = 'project.html'; // ✅ Redirect
+        } else {
+          alert('Login failed: ' + (result.message || result.error || 'Invalid credentials'));
+        }
+      } catch (error) {
+        alert('Login failed: ' + error.message);
+        console.error('Login error:', error);
       }
-    } catch (error) {
-      alert('Login failed: ' + error.message);
-      console.error('Login error:', error);
-    }
+    });
   });
 </script>
