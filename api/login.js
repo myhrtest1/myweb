@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base('app6mKNJ76DPvbtch');
 
   try {
-    const formula = `AND(user='${username}', password='${password}')`;
+    const formula = `AND(User='${username}', Password='${password}')`;
 
     const records = await base('logindet').select({
       filterByFormula: formula
