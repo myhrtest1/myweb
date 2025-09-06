@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Select Project Code</title>
+</head>
+<body>
+  <h2>Select a Project Code</h2>
+
+  <select id="projectDropdown" onchange="handleSelection()">
+    <option value="">Loading...</option>
+  </select>
+
+  <p>Selected Project Code: <span id="selectedCode">None</span></p>
+
+  <script>
+    async function fetchProjectCodes() {
+      const dropdown = document.getElementById('projectDropdown');
+      dropdown.innerHTML = `<option>Loading...</option>`;
+
+      try {
+        const response = await fetch('/api/get-projects');
+        const data = await response.json();
+
+        dropdown.innerHTML = `<option value="">-- Select --</option>`;
+        data.projectCodes.forEach(code => {
+          const option = document.createElement('option');
+          option.value = code;
+          option.textContent = code;
+          dropdown.appendChild(option);
+        });
+      } catch (err) {
+        console.error('Failed to fetch project codes:', err);
+        dropdown.innerHTML = `<option>Error loading data</option>`;
+      }
+    }
+
+    function handleSelection() {
+      const selected = document.getElementById('projectDropdown').value;
+      document.getElementById('selectedCode').textContent = selected || 'None';
+    }
+
+    // Call on page load
+    fetchProjectCodes();
+  </script>
+</body>
+</html>
