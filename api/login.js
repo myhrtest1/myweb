@@ -1,4 +1,3 @@
-// api/login.js
 import Airtable from 'airtable';
 
 export default async function handler(req, res) {
@@ -9,23 +8,48 @@ export default async function handler(req, res) {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password required' });
+    return res.status(400).json({
+      error: 'Username and password required',
+      received: { username, password },
+    });
   }
 
   const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base('app6mKNJ76DPvbtch');
 
   try {
+    const formula = `AND(user='${username}', password='${password}')`;
+
     const records = await base('logindet').select({
-      filterByFormula: `AND(user='${username}', password='${password}')`
+      filterByFormula: formula
     }).firstPage();
 
+    // Debug: Log records length and formula used
+    console.log(`Query formula: ${formula}`);
+    console.log(`Records found: ${records.length}`);
+
     if (records.length > 0) {
-      res.status(200).json({ success: true });
+      return res.status(200).json({
+        success: true,
+        debug: {
+          matchedUser: records[0].fields.user,
+        }
+      });
     } else {
-      res.status(401).json({ success: false, message: 'Invalid credentials' });
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+        debug: {
+          formula,
+          returnedRecords: records.length
+        }
+      });
     }
   } catch (error) {
     console.error('Airtable error:', error);
-    res.status(500).json({ error: 'Server error' });
+
+    return res.status(500).json({
+      error: 'Airtable request failed',
+      details: error.message,
+    });
   }
 }
