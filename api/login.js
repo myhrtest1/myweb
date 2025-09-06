@@ -23,7 +23,8 @@ export default async function handler(req, res) {
 
   try {
     // Make sure column names are exactly like in Airtable ("User" and "Password")
-    const formula = `AND(User='${username}', Password='${password}')`;
+    const formula = `AND({Usr}='${username}', {Pwd}='${password}')`;
+
 
     console.log('API key present:', !!process.env.AIRTABLE_API_KEY);
     console.log(`Query formula: ${formula}`);
