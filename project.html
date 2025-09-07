@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Select Project Code</title>
   <style>
     table {
@@ -21,7 +22,15 @@
 
     td:hover {
       background-color: #eef;
+    }
+
+    .clickable-cell {
       cursor: pointer;
+      background-color: #fefefe;
+    }
+
+    .clickable-cell:hover {
+      background-color: #cce6ff;
     }
   </style>
 </head>
@@ -34,7 +43,6 @@
 
   <p>Selected Project Code: <span id="selectedCode">None</span></p>
 
-  <!-- 🔽 Pivot table will be displayed here -->
   <div id="recordsContainer"></div>
 
   <script>
@@ -119,16 +127,40 @@
         html += `</tr></thead><tbody>`;
 
         sortedDesignations.forEach(designation => {
-          html += `<tr><td><strong>${designation}</strong></td>`;
+          // Encode the designation safely and store in a data attribute
+          const desigEncoded = encodeURIComponent(designation);
+          html += `<tr data-designation="${desigEncoded}">`;
+          html += `<td><strong>${designation}</strong></td>`;
+
           sortedWeekLabels.forEach(week => {
-            const cell = pivot[designation][week];
-            html += `<td>${cell}</td>`;
+            const cellContent = pivot[designation][week] || '';
+            html += `<td class="clickable-cell">${cellContent}</td>`;
           });
+
           html += `</tr>`;
         });
 
         html += `</tbody></table>`;
         container.innerHTML = html;
+
+        // Attach click events to each cell
+        const cells = document.querySelectorAll('.clickable-cell');
+        cells.forEach(cell => {
+          cell.addEventListener('click', function () {
+            const row = cell.closest('tr');
+            const desig = row.getAttribute('data-designation'); // already URL-encoded
+            const projcodeRaw = document.getElementById('projectDropdown').value;
+            const projcode = encodeURIComponent(projcodeRaw);
+
+            if (!projcode || !desig) {
+              alert('Missing project code or designation');
+              return;
+            }
+
+            const url = `requirement-form.html?projcode=${projcode}&desig=${desig}`;
+            window.open(url, '_blank');
+          });
+        });
 
       } catch (error) {
         console.error('Error fetching records:', error);
@@ -136,7 +168,7 @@
       }
     }
 
-    // Initialize dropdown on load
+    // Initialize on load
     fetchProjectCodes();
   </script>
 </body>
