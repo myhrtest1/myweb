@@ -10,71 +10,73 @@
     <option value="">Loading...</option>
   </select>
 
-  <p>Selected Project Code: <span id="selectedCode">None</span></p>
+<script>
+  async function fetchRecordsForProject(projectCode) {
+    const container = document.getElementById('recordsContainer');
+    container.innerHTML = 'Loading records...';
 
-  <!-- 🔽 This is where the filtered records will be displayed -->
-  <div id="recordsContainer" style="margin-top: 20px;"></div>
+    try {
+      const response = await fetch(`/api/get-records?projectCode=${encodeURIComponent(projectCode)}`);
+      const data = await response.json();
 
-  <script>
-    async function fetchProjectCodes() {
-      const dropdown = document.getElementById('projectDropdown');
-      dropdown.innerHTML = `<option>Loading...</option>`;
+      if (!data.records || data.records.length === 0) {
+        container.innerHTML = 'No records found for this project.';
+        return;
+      }
 
-      try {
-        const response = await fetch('/api/get-projects');
-        const data = await response.json();
+      // Step 1: Build pivot data and collect unique Week Labels and Designations
+      const pivot = {}; // { Designation: { WeekLabel: 'Required = X Working = Y' } }
+      const designations = new Set();
+      const weekLabels = new Set();
 
-        dropdown.innerHTML = `<option value="">-- Select --</option>`;
-        data.projectCodes.forEach(code => {
-          const option = document.createElement('option');
-          option.value = code;
-          option.textContent = code;
-          dropdown.appendChild(option);
+      data.records.forEach(record => {
+        const f = record.fields;
+        const designation = f["Designation"];
+        const weekLabel = f["Week Label"];
+        const req = f["Requirement Count"];
+        const work = f["Working Count"];
+
+        designations.add(designation);
+        weekLabels.add(weekLabel);
+
+        if (!pivot[designation]) pivot[designation] = {};
+        pivot[designation][weekLabel] = `Required = ${req} Working = ${work}`;
+      });
+
+      // Step 2: Sort week labels and designations for consistent order
+      const sortedWeekLabels = Array.from(weekLabels).sort();
+      const sortedDesignations = Array.from(designations).sort();
+
+      // Step 3: Build HTML table
+      let html = `<table border="1" cellpadding="6" cellspacing="0">
+        <thead>
+          <tr>
+            <th>Designation</th>`;
+
+      sortedWeekLabels.forEach(week => {
+        html += `<th>${week}</th>`;
+      });
+
+      html += `</tr></thead><tbody>`;
+
+      sortedDesignations.forEach(designation => {
+        html += `<tr><td><strong>${designation}</strong></td>`;
+        sortedWeekLabels.forEach(week => {
+          const cell = pivot[designation][week];
+          html += `<td>${cell}</td>`;
         });
-      } catch (err) {
-        console.error('Failed to fetch project codes:', err);
-        dropdown.innerHTML = `<option>Error loading data</option>`;
-      }
+        html += `</tr>`;
+      });
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+
+    } catch (error) {
+      console.error('Error fetching records:', error);
+      container.innerHTML = 'Failed to load records.';
     }
+  }
+</script>
 
-    async function fetchRecordsForProject(projectCode) {
-      const container = document.getElementById('recordsContainer');
-      container.innerHTML = 'Loading records...';
-
-      try {
-        const response = await fetch(`/api/get-records?projectCode=${encodeURIComponent(projectCode)}`);
-        const data = await response.json();
-
-        if (!data.records || data.records.length === 0) {
-          container.innerHTML = 'No records found for this project.';
-          return;
-        }
-
-        let html = '<ul>';
-        data.records.forEach(record => {
-          html += `<li>${JSON.stringify(record.fields)}</li>`;
-        });
-        html += '</ul>';
-
-        container.innerHTML = html;
-      } catch (error) {
-        console.error('Error fetching records:', error);
-        container.innerHTML = 'Failed to load records.';
-      }
-    }
-
-    function handleSelection() {
-      const selected = document.getElementById('projectDropdown').value;
-      document.getElementById('selectedCode').textContent = selected || 'None';
-
-      if (selected) {
-        fetchRecordsForProject(selected);
-      } else {
-        document.getElementById('recordsContainer').innerHTML = '';
-      }
-    }
-
-    fetchProjectCodes();
-  </script>
 </body>
 </html>
