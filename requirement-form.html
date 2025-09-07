@@ -51,37 +51,8 @@
     <button type="submit">Submit</button>
   </form>
 
-  <script>
-    // call using below syntax
-    //https://............../requirement-form.html?projcode=ABC123&desig=Developer
-    // Function to get query params from URL
-    function getQueryParam(name) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(name) || '';
-    }
-
-    // Set readonly fields from URL parameters
-    document.getElementById('projcode').value = getQueryParam('projcode');
-    document.getElementById('desig').value = getQueryParam('desig');
-
-    // Submit handler
-    document.getElementById('requirementForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      const projcode = document.getElementById('projcode').value;
-      const desig = document.getElementById('desig').value;
-      const count = document.getElementById('count').value;
-      const startdate = document.getElementById('startdate').value;
-      const enddate = document.getElementById('enddate').value;
-
-      alert(`Details Submitted:\n
-Project Code: ${projcode}
-Designation: ${desig}
-New Requirement Count: ${count}
-Start Date: ${startdate}
-End Date: ${enddate || 'Not provided'}`);
-    });
-  </script>
+  <!-- ✅ Load logic from external file -->
+  <script src="api/requirement-form.js"></script>
 
 </body>
 </html>
